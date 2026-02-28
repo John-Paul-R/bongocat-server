@@ -15,6 +15,8 @@ Console.CancelKeyPress += (_, e) => {
 var incomingKeysSvc = new IncomingKeysConnectionManager(port: incomingKeysPort);
 var outgoingWebSocketSvc = new WebSocketKeysSender(outgoingWebSocketPort);
 
+incomingKeysSvc.OnKey += outgoingWebSocketSvc.BroadcastKey;
+
 await Task.WhenAll(
     incomingKeysSvc.Run(maxClients: 10, cts.Token),
     outgoingWebSocketSvc.Start(cts.Token)

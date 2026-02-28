@@ -52,7 +52,11 @@ public class IncomingKeysConnectionManager
                     socket.RemoteEndPoint?.Serialize(),
                     dataAsStr
                 );
+                OnKey(socket.RemoteEndPoint?.Serialize().ToString() ?? "unknown remote", dataAsStr);
             }
         } catch (OperationCanceledException) { }
     }
+
+    public delegate void RemoteKeyHandler(string clientId, string? extraData);
+    public event RemoteKeyHandler OnKey;
 }
