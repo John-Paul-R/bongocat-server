@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <title>WS Log</title>
+        <base href="/bongocat/" />
         <style>
             * {
                 box-sizing: border-box;
@@ -174,7 +175,7 @@
             <input
                 id="url-input"
                 type="text"
-                value="ws://localhost:8080/"
+                value="wss://play.jpcode.dev:2019/"
                 spellcheck="false"
             />
             <button id="toggle-btn" onclick="window.toggle()">Connect</button>
@@ -189,6 +190,8 @@
         <script src="js/main.js" type="module"></script>
         <script type="module">
             window.hello();
+            // try autoconnect
+            window.toggle();
         </script>
     </body>
 </html>
