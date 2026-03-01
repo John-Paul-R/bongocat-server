@@ -254,7 +254,7 @@
                                 ? "right"
                                 : "neither",
                     );
-                }, 150);
+                }, 100);
 
                 displayBongo(
                     isLeftVisuallyBongoed && isRightVisuallyBongoed
@@ -289,6 +289,7 @@
 
             const bongo_data_pattern = /key pressed \((right|left)\) at (\d+)/;
             function handleBongoMessage(data) {
+                console.log("raw message", data);
                 const match = bongo_data_pattern.exec(data);
                 if (match) {
                     const direction = match[1];
