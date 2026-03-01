@@ -1,8 +1,9 @@
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
+using BongoCatServer;
 
-public class WebSocketKeysSender
+public partial class WebSocketKeysSender
 {
     private readonly HttpListener _httpListener;
     private readonly List<Task> _connectionHandlerTasks = [];
@@ -15,7 +16,23 @@ public class WebSocketKeysSender
         _httpListener.Prefixes.Add($"http://+:{port}/");
     }
 
-    public void BroadcastKey(string senderClientId, string? extraData)
+    public void BroadcastKey(string senderClientId, Hand hand, long? timestamp)
+    {
+        // var message = "[JP] key pressed (right) at 1772401280141";
+        Broadcast(senderClientId, $"[{senderClientId}] key pressed ({hand.Serialize()}) at {timestamp}");
+    }
+
+    public void BroadcastConnect(string senderClientId)
+    {
+        Broadcast(senderClientId, "<connect>");
+    }
+
+    public void BroadcastDisconnect(string senderClientId)
+    {
+        Broadcast(senderClientId, "<disconnect>");
+    }
+
+    private void Broadcast(string senderClientId, string extraData)
     {
         ArraySegment<byte> message = new ArraySegment<byte>(Encoding.UTF8.GetBytes(
             $"{senderClientId}: {extraData}"

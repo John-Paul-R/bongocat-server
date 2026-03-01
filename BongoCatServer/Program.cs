@@ -16,6 +16,16 @@ var incomingKeysSvc = new IncomingKeysConnectionManager(port: incomingKeysPort);
 var outgoingWebSocketSvc = new WebSocketKeysSender(outgoingWebSocketPort);
 
 incomingKeysSvc.OnKey += outgoingWebSocketSvc.BroadcastKey;
+incomingKeysSvc.OnConnect += (clientId) =>
+{
+    Console.WriteLine("client connect: [{0}]", clientId);
+    outgoingWebSocketSvc.BroadcastConnect(clientId);
+};
+incomingKeysSvc.OnDisconnect += (clientId) =>
+{
+    Console.WriteLine("client disconnect: [{0}]", clientId);
+    outgoingWebSocketSvc.BroadcastDisconnect(clientId);
+};
 
 await Task.WhenAll(
     incomingKeysSvc.Run(maxClients: 10, cts.Token),
