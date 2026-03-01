@@ -17,5 +17,7 @@ RUN dotnet publish "./BongoCatServer.csproj" -c $BUILD_CONFIGURATION -o /app/pub
 
 FROM base AS final
 WORKDIR /app
+EXPOSE 2017
+EXPOSE 2018
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "BongoCatServer.dll"]

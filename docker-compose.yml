@@ -1,0 +1,9 @@
+services:
+  bongocat-server:
+    build:
+      context: .
+      dockerfile: BongoCatServer/Dockerfile
+    ports:
+      - "2017:2017"  # Incoming keys TCP port
+      - "2018:2018"  # WebSocket port
+    restart: unless-stopped
