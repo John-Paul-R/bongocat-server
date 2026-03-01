@@ -1,5 +1,6 @@
+const catsContainer = document.getElementById("bongocat-container");
+
 function createBongoCatImages(username) {
-  const catsContainer = document.getElementById("bongocat-container");
   function configureCatImage(imageElement, src) {
     imageElement.src = src;
   }
@@ -8,6 +9,7 @@ function createBongoCatImages(username) {
   );
   thisCatContainer.classList.add("cat");
   const bongoElements = {
+    container: thisCatContainer,
     neither: thisCatContainer.appendChild(document.createElement("img")),
     left: thisCatContainer.appendChild(document.createElement("img")),
     right: thisCatContainer.appendChild(document.createElement("img")),
@@ -31,6 +33,7 @@ function createBongoCatImages(username) {
 class BongoCat {
   username;
   bongoElements;
+  isFocused = false;
 
   bongoRestoreTimeout = {
     left: null,
@@ -40,6 +43,10 @@ class BongoCat {
   constructor(username) {
     this.username = username;
     this.bongoElements = createBongoCatImages(username);
+    this.bongoElements.container.bongocat = this;
+    this.bongoElements.container.addEventListener("click", () => {
+      this.toggleFocus();
+    });
   }
 
   /**
@@ -94,6 +101,29 @@ class BongoCat {
     this.bongoElements.right.style.display = "none";
     this.bongoElements.both.style.display = "none";
     this.bongoElements[frame].style.display = "block";
+  }
+
+  toggleFocus() {
+    if (this.isFocused) {
+      this.bongoElements.container.remove();
+      catsContainer.appendChild(this.bongoElements.container);
+      for (const child of document.body.children) {
+        child.style.display = child._prev_display;
+      }
+      this.isFocused = false;
+    } else {
+      this.focus();
+    }
+  }
+
+  focus() {
+    this.isFocused = true;
+    for (const child of document.body.children) {
+      child._prev_display = child.style.display;
+      child.style.display = "none";
+    }
+    this.bongoElements.container.remove();
+    document.body.appendChild(this.bongoElements.container);
   }
 }
 
