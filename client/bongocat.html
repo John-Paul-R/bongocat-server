@@ -137,10 +137,34 @@
                 margin-top: 40px;
             }
 
-            .bongocat-container > img {
+            .bongocat-container {
+                /* all bongocats container */
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            .cat {
+                position: relative;
                 width: 256px;
-                height: 256px;
-                background-color: red;
+            }
+            .cat-name {
+                position: absolute;
+                top: 70%;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 4px;
+                background-color: #345569;
+                color: white;
+                border-color: #454545;
+                font-size: 14px;
+                font-weight: bold;
+                text-align: center;
+            }
+            .cat img {
+                width: 256px;
+                /*height: 256px;*/
+                /*background-color: red;*/
             }
         </style>
     </head>
@@ -153,196 +177,18 @@
                 value="ws://localhost:8080/"
                 spellcheck="false"
             />
-            <button id="toggle-btn" onclick="toggle()">Connect</button>
-            <button onclick="clearLog()">Clear</button>
+            <button id="toggle-btn" onclick="window.toggle()">Connect</button>
+            <button onclick="window.clearLog()">Clear</button>
         </div>
-        <div id="bongocat-container">
-            <img
-                id="bongocat-both-up.png"
-                src="assets/bongo-cat-both-up.png"
-                alt="Bongo Cat"
-            />
-            <img
-                id="bongocat-left-down.png"
-                src="assets/bongo-cat-left-down.png"
-                alt="Bongo Cat"
-            />
-            <img
-                id="bongocat-right-down.png"
-                src="assets/bongo-cat-right-down.png"
-                alt="Bongo Cat"
-            />
-            <img
-                id="bongocat-both-down.png"
-                src="assets/bongo-cat-both-down.png"
-                alt="Bongo Cat"
-            />
-        </div>
+        <div id="bongocat-container"></div>
 
         <div id="log">
             <div id="empty">no events yet</div>
         </div>
 
-        <script>
-            let ws = null;
-
-            function ts() {
-                return new Date().toISOString().slice(11, 23);
-            }
-
-            function appendEntry(kind, text) {
-                const empty = document.getElementById("empty");
-                if (empty) empty.remove();
-
-                const log = document.getElementById("log");
-                const div = document.createElement("div");
-                div.className = `entry ${kind}`;
-                div.innerHTML = `<span class="ts">${ts()}</span><span class="kind">${kind}</span><span class="body">${escHtml(text)}</span>`;
-
-                const atBottom =
-                    log.scrollHeight - log.scrollTop - log.clientHeight < 40;
-                log.appendChild(div);
-                if (atBottom) log.scrollTop = log.scrollHeight;
-            }
-
-            function escHtml(str) {
-                return str
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
-            }
-
-            function setStatus(state) {
-                const el = document.getElementById("status");
-                el.className = state;
-            }
-
-            function toggle() {
-                ws ? disconnect() : connect();
-            }
-
-            let bongoRestoreTimeout = {
-                left: null,
-                right: null,
-            };
-            /**
-             * @param {'left'|'right'} direction
-             */
-            function bongo(direction) {
-                const isLeftVisuallyBongoed =
-                    direction === "left" || bongoRestoreTimeout.left;
-                const isRightVisuallyBongoed =
-                    direction === "right" || bongoRestoreTimeout.right;
-                if (bongoRestoreTimeout[direction]) {
-                    clearTimeout(bongoRestoreTimeout[direction]);
-                }
-                bongoRestoreTimeout[direction] = setTimeout(() => {
-                    bongoRestoreTimeout[direction] = null;
-
-                    // the direction that was triggered will not count for the
-                    // "what to do next" ,as its been disabled, so exclude it.
-                    const isLeftVisuallyBongoed =
-                        direction !== "left" && bongoRestoreTimeout.left;
-                    const isRightVisuallyBongoed =
-                        direction !== "right" && bongoRestoreTimeout.right;
-                    displayBongo(
-                        isLeftVisuallyBongoed && isRightVisuallyBongoed
-                            ? "both"
-                            : isLeftVisuallyBongoed
-                              ? "left"
-                              : isRightVisuallyBongoed
-                                ? "right"
-                                : "neither",
-                    );
-                }, 100);
-
-                displayBongo(
-                    isLeftVisuallyBongoed && isRightVisuallyBongoed
-                        ? "both"
-                        : isLeftVisuallyBongoed
-                          ? "left"
-                          : isRightVisuallyBongoed
-                            ? "right"
-                            : "neither",
-                );
-            }
-
-            const bongoElements = {
-                neither: document.getElementById("bongocat-both-up.png"),
-                left: document.getElementById("bongocat-left-down.png"),
-                right: document.getElementById("bongocat-right-down.png"),
-                both: document.getElementById("bongocat-both-down.png"),
-            };
-            bongoElements.left.style.display = "none";
-            bongoElements.right.style.display = "none";
-            bongoElements.both.style.display = "none";
-            /**
-             * @param {'left' | 'right' | 'both' | 'neither'} frame
-             */
-            function displayBongo(frame) {
-                bongoElements.neither.style.display = "none";
-                bongoElements.left.style.display = "none";
-                bongoElements.right.style.display = "none";
-                bongoElements.both.style.display = "none";
-                bongoElements[frame].style.display = "block";
-            }
-
-            const bongo_data_pattern = /key pressed \((right|left)\) at (\d+)/;
-            function handleBongoMessage(data) {
-                console.log("raw message", data);
-                const match = bongo_data_pattern.exec(data);
-                if (match) {
-                    const direction = match[1];
-                    const timestamp = match[2];
-                    console.log(
-                        `Bongo cat pressed ${direction} at ${timestamp}`,
-                    );
-                    bongo(direction);
-                }
-            }
-
-            function connect() {
-                const url = document.getElementById("url-input").value.trim();
-                setStatus("connecting");
-                document.getElementById("toggle-btn").textContent =
-                    "Connecting…";
-
-                ws = new WebSocket(url);
-
-                ws.onopen = () => {
-                    setStatus("connected");
-                    document.getElementById("toggle-btn").textContent =
-                        "Disconnect";
-                    appendEntry("open", `connected to ${url}`);
-                };
-
-                ws.onmessage = (e) => {
-                    appendEntry("msg", e.data);
-                    handleBongoMessage(e.data);
-                };
-
-                ws.onclose = (e) => {
-                    setStatus("disconnected");
-                    document.getElementById("toggle-btn").textContent =
-                        "Connect";
-                    appendEntry(
-                        "close",
-                        `closed (code ${e.code}${e.reason ? ": " + e.reason : ""})`,
-                    );
-                    ws = null;
-                };
-
-                ws.onerror = () => appendEntry("error", "websocket error");
-            }
-
-            function disconnect() {
-                ws?.close();
-            }
-
-            function clearLog() {
-                const log = document.getElementById("log");
-                log.innerHTML = '<div id="empty">no events yet</div>';
-            }
+        <script src="js/main.js" type="module"></script>
+        <script type="module">
+            window.hello();
         </script>
     </body>
 </html>
