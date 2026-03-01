@@ -10,7 +10,7 @@ public class IncomingKeysConnectionManager
 
     public IncomingKeysConnectionManager(int port)
     {
-        _listener = new TcpListener(IPAddress.Loopback, port);
+        _listener = new TcpListener(IPAddress.Any, port);
     }
 
     public async Task Run(int maxClients, CancellationToken ct)

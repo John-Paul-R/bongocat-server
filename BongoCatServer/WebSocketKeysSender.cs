@@ -12,7 +12,7 @@ public class WebSocketKeysSender
     public WebSocketKeysSender(int port)
     {
         _httpListener = new();
-        _httpListener.Prefixes.Add($"http://localhost:{port}/");
+        _httpListener.Prefixes.Add($"http://+:{port}/");
     }
 
     public void BroadcastKey(string senderClientId, string? extraData)
